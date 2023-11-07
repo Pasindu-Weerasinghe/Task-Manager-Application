@@ -14,8 +14,12 @@ const Login = () => {
       .post("http://localhost:8080/login", { email, password })
       .then((result) => {
         console.log(result)
-        if (result.data === "Success") {
-          navigate("/home");
+        if (result.data.Status === "Success") {
+          if(result.data.role === "admin"){
+            navigate("/admin")
+          }else{
+            navigate("/home");
+          }
         }
       })
       .catch((err) => console.log(err));

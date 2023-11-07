@@ -1,7 +1,8 @@
 import express, { response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import employeeModel from "./model/employee.js";
+//import employeeModel from "./model/employee.js";
+import userModel from "./model/user.js";
 import bcrypt, { hash } from "bcrypt";
 import Jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
@@ -25,9 +26,9 @@ app.post("/register", (req, res) => {
   bcrypt
     .hash(password, 10)
     .then((hash) => {
-      employeeModel
+      userModel
         .create({ name, email, password: hash })
-        .then((employees) => res.json(employees))
+        .then((user) => res.json(user))
         .catch((err) => console.log(err));
     })
     .catch((err) => console.log(err.message));
@@ -35,20 +36,21 @@ app.post("/register", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  employeeModel.findOne({ email: email }).then((user) => {
+  userModel.findOne({ email: email }).then((user) => {
     if (user) {
       bcrypt.compare(password, user.password, (err, response) => {
         if (response) {
           const userPayload = {
             id: user.id,
             username: user.name,
+            role:user.role
           };
 
           const accessToken = Jwt.sign(userPayload, process.env.TOKEN_KEY, {
             expiresIn: "1h",
           });
           res.cookie("accessToken", accessToken);
-          res.json("Success");
+          res.json({Status:"Success",role:user.role});
         } else {
           res.json("The password is incorrect");
         }
@@ -59,7 +61,7 @@ app.post("/login", (req, res) => {
   });
 });
 
-app.get("/home", auth, (req, res) => {
+app.get("/admin", auth, (req, res) => {
   return res.json("Success");
 });
 
